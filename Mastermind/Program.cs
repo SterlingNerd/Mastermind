@@ -1,27 +1,24 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
+[SuppressMessage("ReSharper", "UnusedType.Global")]
 public static class Program
 {
-	public const int KeyLength = 4;
-	public const int MaxGuesses = 10;
+	public static int KeyLength = 4;
+	public static int MaxGuesses = 10;
 
-	public static readonly Dictionary<ConsoleKey, PegColor> ColorKeys = new()
+	public static readonly PegCollection pegs = PegCollection.Default;
+
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
+	public static void Main(int? maxGuesses, int? keyLength)
 	{
-		{ ConsoleKey.R, PegColor.Red },
-		{ ConsoleKey.G, PegColor.Green },
-		{ ConsoleKey.B, PegColor.Blue },
-		{ ConsoleKey.Y, PegColor.Yellow },
-		{ ConsoleKey.W, PegColor.White },
-		{ ConsoleKey.K, PegColor.Black }
-	};
+		MaxGuesses = maxGuesses ?? MaxGuesses;
+		KeyLength = keyLength ?? KeyLength;
 
-	public static readonly Random rand = new();
-
-	public static void Main()
-	{
 		Console.Clear();
 
-		Combo key = Combo.Random();
+		Combo key = Combo.Random(pegs, KeyLength);
+
 		Guess? guess = null;
 		int guesses = 0;
 		while (guess != key && guesses < MaxGuesses)
@@ -43,8 +40,9 @@ public static class Program
 	{
 		WritePrompt();
 
-		PegColor[] pegs = new PegColor[KeyLength];
 		int currentIndex = 0;
+
+		Peg[] guess = new Peg[KeyLength];
 
 		while (currentIndex < KeyLength)
 		{
@@ -61,20 +59,26 @@ public static class Program
 				Console.Write("  ");
 				Console.CursorLeft -= 1;
 			}
-			else if (ColorKeys.ContainsKey(input.Key))
+			else if (pegs.ContainsKey(input.Key))
 			{
-				pegs[currentIndex] = ColorKeys[input.Key];
+				guess[currentIndex] = pegs.GetPeg(input.Key);
 				Console.CursorLeft--;
-				WritePeg(pegs[currentIndex]);
+				WritePeg(guess[currentIndex]);
 				SetDefaultColor();
 				Console.Write(' ');
 				currentIndex++;
+			}
+			else
+			{
+				Console.CursorLeft -= 1;
+				Console.Write(" ");
+				Console.CursorLeft -= 1;
 			}
 		}
 
 		ClearLine();
 
-		return new Guess(pegs, key);
+		return new Guess(guess, key);
 	}
 
 	private static void ClearLine()
@@ -85,52 +89,15 @@ public static class Program
 		Console.SetCursorPosition(0, Console.CursorTop);
 	}
 
-	private static void SetColor(PegColor? color = null)
-	{
-		switch (color)
-		{
-			case null:
-				// case PegColor.None:
-				Console.ForegroundColor = ConsoleColor.Gray;
-				Console.BackgroundColor = ConsoleColor.Black;
-				break;
-			case PegColor.Red:
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.BackgroundColor = ConsoleColor.Black;
-				break;
-			case PegColor.Green:
-				Console.ForegroundColor = ConsoleColor.Green;
-				Console.BackgroundColor = ConsoleColor.Black;
-				break;
-			case PegColor.Blue:
-				Console.ForegroundColor = ConsoleColor.Blue;
-				Console.BackgroundColor = ConsoleColor.Black;
-				break;
-			case PegColor.Yellow:
-				Console.ForegroundColor = ConsoleColor.Yellow;
-				Console.BackgroundColor = ConsoleColor.Black;
-				break;
-			case PegColor.Black:
-				Console.ForegroundColor = ConsoleColor.Black;
-				Console.BackgroundColor = ConsoleColor.DarkGray;
-				break;
-			case PegColor.White:
-				Console.ForegroundColor = ConsoleColor.White;
-				Console.BackgroundColor = ConsoleColor.Black;
-				break;
-			default:
-				throw new ArgumentOutOfRangeException(nameof(color), color, null);
-		}
-	}
-
 	private static void SetDefaultColor()
 	{
-		SetColor();
+		Console.ForegroundColor = ConsoleColor.White;
+		Console.BackgroundColor = ConsoleColor.Black;
 	}
 
 	private static void WriteCombo(Combo combo)
 	{
-		foreach (PegColor peg in combo)
+		foreach (Peg peg in combo)
 		{
 			WritePeg(peg);
 			SetDefaultColor();
@@ -163,44 +130,25 @@ public static class Program
 		Console.WriteLine();
 	}
 
-	private static void WritePeg(PegColor peg)
+	private static void WritePeg(Peg peg)
 	{
 		SetColor(peg);
-		switch (peg)
-		{
-			// case PegColor.None:
-			// 	Console.Write("_");
-			// 	break;
-			case PegColor.Red:
-				Console.Write("R");
-				break;
-			case PegColor.Green:
-				Console.Write("G");
-				break;
-			case PegColor.Blue:
-				Console.Write("B");
-				break;
-			case PegColor.Yellow:
-				Console.Write("Y");
-				break;
-			case PegColor.Black:
-				Console.Write("K");
-				break;
-			case PegColor.White:
-				Console.Write("W");
-				break;
-			default:
-				throw new ArgumentOutOfRangeException(nameof(peg), peg, null);
-		}
+		Console.Write(peg.DisplayCharacter);
+	}
+
+	private static void SetColor(Peg peg)
+	{
+		Console.ForegroundColor = peg.ForegroundColor;
+		Console.BackgroundColor = peg.BackgroundColor;
 	}
 
 	private static void WritePrompt()
 	{
 		SetDefaultColor();
 		Console.Write("Enter your guess: (");
-		foreach (PegColor color in Enum.GetValues<PegColor>())
+		foreach (Peg peg in pegs)
 		{
-			WritePeg(color);
+			WritePeg(peg);
 			SetDefaultColor();
 			Console.Write(' ');
 		}

@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 
-public class Combo : IList<PegColor>
+[DebuggerDisplay("Combo: {ToString()}")]
+public class Combo : IList<Peg>
 {
+	public override string ToString()
+	{
+		return string.Join(' ', this.Select(x=>x.DisplayCharacter));
+	}
+
 	public int Count => pegs.Length;
 	public bool IsReadOnly => true;
 
-	public PegColor this[int i]
+	public Peg this[int i]
 	{
 		get => pegs[i];
 		set => pegs[i] = value;
@@ -14,23 +21,19 @@ public class Combo : IList<PegColor>
 
 	public int Length => pegs.Length;
 
-	private PegColor[] pegs { get; }
-
-	private Combo() : this(new PegColor[Program.KeyLength])
-	{
-	}
+	private Peg[] pegs { get; }
 
 	public Combo(Combo combo)
 		: this(combo.pegs)
 	{
 	}
 
-	public Combo(PegColor[] pegs)
+	public Combo(Peg[] pegs)
 	{
 		this.pegs = pegs;
 	}
 
-	public void Add(PegColor item)
+	public void Add(Peg item)
 	{
 		throw new NotSupportedException();
 	}
@@ -40,12 +43,12 @@ public class Combo : IList<PegColor>
 		throw new NotSupportedException();
 	}
 
-	public bool Contains(PegColor item)
+	public bool Contains(Peg item)
 	{
 		return pegs.Contains(item);
 	}
 
-	public void CopyTo(PegColor[] array, int arrayIndex)
+	public void CopyTo(Peg[] array, int arrayIndex)
 	{
 		throw new NotSupportedException();
 	}
@@ -70,9 +73,9 @@ public class Combo : IList<PegColor>
 		return Equals((Combo)obj);
 	}
 
-	public IEnumerator<PegColor> GetEnumerator()
+	public IEnumerator<Peg> GetEnumerator()
 	{
-		return ((IEnumerable<PegColor>)pegs).GetEnumerator();
+		return ((IEnumerable<Peg>)pegs).GetEnumerator();
 	}
 
 	public override int GetHashCode()
@@ -80,17 +83,17 @@ public class Combo : IList<PegColor>
 		return pegs.GetHashCode();
 	}
 
-	public int IndexOf(PegColor item)
+	public int IndexOf(Peg item)
 	{
 		return Array.IndexOf(pegs, item);
 	}
 
-	public void Insert(int index, PegColor item)
+	public void Insert(int index, Peg item)
 	{
 		throw new NotSupportedException();
 	}
 
-	public bool Remove(PegColor item)
+	public bool Remove(Peg item)
 	{
 		throw new NotSupportedException();
 	}
@@ -138,15 +141,14 @@ public class Combo : IList<PegColor>
 		return !Equals(left, right);
 	}
 
-	public static Combo Random()
+	public static Combo Random(IList<Peg> validPegs, int keyLength)
 	{
-		Combo combo = new();
-
-		for (int i = 0; i < Program.KeyLength; i++)
+		Peg[] pegs = new Peg[keyLength];
+		for (int i = 0; i < keyLength; i++)
 		{
-			combo[i] = (PegColor)Program.rand.Next(Enum.GetValues<PegColor>().Cast<int>().Min(), Enum.GetValues<PegColor>().Cast<int>().Max());
+			pegs[i] = (validPegs[new Random().Next(0, validPegs.Count - 1)]);
 		}
 
-		return combo;
+		return new Combo(pegs);
 	}
 }

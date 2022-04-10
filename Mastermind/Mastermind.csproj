@@ -7,4 +7,18 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DocumentationFile />
+      <NoWarn>1701;1702;1591</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile />
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
+      <PackageReference Include="System.CommandLine.DragonFruit" Version="0.4.0-alpha.22114.1" />
+    </ItemGroup>
+
 </Project>

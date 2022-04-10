@@ -4,15 +4,16 @@ public class Guess : Combo
 {
 	public bool IsCorrect => NumberCorrectPosition == Length;
 
+
 	public int NumberCorrectColor
 	{
 		get
 		{
 			int count = 0;
-			foreach (PegColor color in Enum.GetValues<PegColor>())
+			foreach (Peg peg in key.Distinct())
 			{
-				int keyCount = key.Count(x => x == color);
-				int guessCount = this.Count(x => x == color);
+				int keyCount = key.Count(x => x == peg);
+				int guessCount = this.Count(x => x == peg);
 				count += Math.Min(keyCount, guessCount);
 			}
 
@@ -39,7 +40,7 @@ public class Guess : Combo
 
 	private Combo key { get; }
 
-	public Guess(PegColor[] guess, Combo key)
+	public Guess(Peg[] guess, Combo key)
 		: base(guess)
 	{
 		this.key = key;
